@@ -2,7 +2,21 @@ import sys
 import zmq
 import time
 import json
-#import bge
+import bge
+
+
+# sets the target angle to the value
+def setTarAng(value):
+    cont = bge.logic.getCurrentController()
+    own = cont.owner
+    own["tarAng"] = value
+
+# returns the ID of the joint
+def getJointId():
+    cont = bge.logic.getCurrentController()
+    own = cont.owner
+    return own["joint"]
+
 
 # Joint data query function
 def requestJointData(socket, joint_id):
@@ -33,6 +47,7 @@ def getAngleFromResponseData(resp_data):
     return angle
 
 
+
 # Socket to talk to server
 port = "5557"
 context = zmq.Context()
@@ -40,15 +55,17 @@ socket = context.socket(zmq.REQ)
 
 socket.connect ("tcp://localhost:%s" % port)
 
+# get joint id
+joint_id = getJointId()
 
-
-print("Requesting joint data...")
+print("Requesting joint data for " + joint_id)
 
 # Requesting joint data
-resp_data = requestJointData(socket, 'J1')
+resp_data = requestJointData(socket, joint_id)
 
 print ("ID: " + resp_data["JOINT_ID"])
 print ("ANG: " + str(getAngleFromResponseData(resp_data)))
 
+setTarAng(getAngleFromResponseData(resp_data))
     
 socket.close()
